@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <body>
+        <h2><b>Create a new employee</b></h2>
+        <h4 id="errorMessage"></h4>
+
+        <form>
+            <label for="firstName">First name:</label>
+            <input type="text" id="firstName" name="firstname"><br><br>
+            <label for="lastName">Last name:</label>
+            <input type="text" id="lastName" name="lastName"><br><br>
+            <label for="hireDate">Hire Date:</label>
+            <input type="text" id="hireDate" name="hireDate"><br><br>
+            <label for="role">Role:</label>
+            <input type="text" id="role" name="role"><br><br>
+            <input type="button" onclick="postEmployee()" value="Submit">
+        </form><br><br>
+        
+        <h2><b>List of all existing employees</b></h2>
+        <d1 id=list></d1>
+    </body>
+
+    <script>
+        //Populate on page load
+        populateEmployeeList();
+
+        //Updates the list to contain all employees in the database
+        function populateEmployeeList() {
+            //Send get request to all employees endpoing
+            axios.get('/api/employees').then(response => {
+                //Obtain the list element
+                var list = document.getElementById("list");
+                list.innerHTML = "";
+
+                //Update the list element with all of the items in the list
+                for (const _id of Object.keys(response.data)){
+                    list.innerHTML += "<dt><b>ID:</b> " + response.data[_id]._id + "</dt>";
+                    list.innerHTML += "<dd><b>First Name:</b> " + response.data[_id].firstName + "</dd>";
+                    list.innerHTML += "<dd><b>Last Name:</b> " + response.data[_id].lastName  + "</dd>";
+                    list.innerHTML += "<dd><b>Hire Date:</b> " + response.data[_id].hireDate + "</dd>";
+                    list.innerHTML += "<dd><b>Role:</b> " + response.data[_id].role + "</dd>";
+                    list.innerHTML += "<dd><b>Quote:</b> " + response.data[_id].quote + "</dd>";
+                    list.innerHTML += "<dd><b>Joke:</b> " + response.data[_id].joke + "</dd>";
+                }
+            });
+        }
+
+        //Submit all the values in the text boxes to create a new employee and handle the response
+        function postEmployee() {
+            //Create and object with the data from the text boxes
+            let postBody = {};
+            postBody.firstName = document.getElementById("firstName").value;
+            postBody.lastName = document.getElementById("lastName").value;
+            postBody.hireDate = document.getElementById("hireDate").value;
+            postBody.role = document.getElementById("role").value;
+
+            //Send the post request to the REST endpoint
+            axios.post('/api/employees', postBody).then(response => {
+                //If successfull, reset the error message and reload the list of employees
+                document.getElementById("errorMessage").innerText = "";
+                populateEmployeeList();
+            }).catch(err => {
+                //On failure, update the error message
+                document.getElementById("errorMessage").innerText = err.response.data;
+            });
+        }
+    </script>
+</html> 
