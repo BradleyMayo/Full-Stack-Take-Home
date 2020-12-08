@@ -1,27 +1,44 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <style>
+        .center {
+            margin: auto;
+            width: 50%;
+        }
+        .text_center {
+            text-align: center;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <body>
-        <h2><b>Create a new employee</b></h2>
-        <h4 id="errorMessage"></h4>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+</head>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand">Full Stack Take Home</a>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link active" aria-current="page">Employee List</a>
+                    <a class="nav-link" href="submit.html">Submit New Employee</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-        <form>
-            <label for="firstName">First name:</label>
-            <input type="text" id="firstName" name="firstname"><br><br>
-            <label for="lastName">Last name:</label>
-            <input type="text" id="lastName" name="lastName"><br><br>
-            <label for="hireDate">Hire Date:</label>
-            <input type="text" id="hireDate" name="hireDate"><br><br>
-            <label for="role">Role:</label>
-            <input type="text" id="role" name="role"><br><br>
-            <input type="button" onclick="postEmployee()" value="Submit">
-        </form><br><br>
-        
-        <h2><b>List of all existing employees</b></h2>
-        <d1 id=list></d1>
+    <body>
+        <div class="text_center">
+            <h3><b>List of all existing employees</b>
+            <button class="btn btn-primary" onclick="sortEmployeeListByName()">Sort Employees By Name</button></h3>
+        </div>
+
+        <div class="accordion center" id="employeeAccordion">
+        </div>
     </body>
 
     <script>
+        //Holds the employee data returned by the back end as an array so that it can be sorted
+        var employeeData = [];
         //Populate on page load
         populateEmployeeList();
 
@@ -29,41 +46,51 @@
         function populateEmployeeList() {
             //Send get request to all employees endpoing
             axios.get('/api/employees').then(response => {
-                //Obtain the list element
-                var list = document.getElementById("list");
-                list.innerHTML = "";
-
-                //Update the list element with all of the items in the list
+                //Wipe old data
+                employeeData = [];
+                //Save the data locally as an array
                 for (const _id of Object.keys(response.data)){
-                    list.innerHTML += "<dt><b>ID:</b> " + response.data[_id]._id + "</dt>";
-                    list.innerHTML += "<dd><b>First Name:</b> " + response.data[_id].firstName + "</dd>";
-                    list.innerHTML += "<dd><b>Last Name:</b> " + response.data[_id].lastName  + "</dd>";
-                    list.innerHTML += "<dd><b>Hire Date:</b> " + response.data[_id].hireDate + "</dd>";
-                    list.innerHTML += "<dd><b>Role:</b> " + response.data[_id].role + "</dd>";
-                    list.innerHTML += "<dd><b>Quote:</b> " + response.data[_id].quote + "</dd>";
-                    list.innerHTML += "<dd><b>Joke:</b> " + response.data[_id].joke + "</dd>";
+                    employeeData.push(response.data[_id]);
                 }
+                updateList();
             });
         }
 
-        //Submit all the values in the text boxes to create a new employee and handle the response
-        function postEmployee() {
-            //Create and object with the data from the text boxes
-            let postBody = {};
-            postBody.firstName = document.getElementById("firstName").value;
-            postBody.lastName = document.getElementById("lastName").value;
-            postBody.hireDate = document.getElementById("hireDate").value;
-            postBody.role = document.getElementById("role").value;
+        function sortEmployeeListByName() {
+            employeeData.sort(function(a, b){
+                const firstA = a.firstName.toUpperCase();
+                const firstB = b.firstName.toUpperCase();
 
-            //Send the post request to the REST endpoint
-            axios.post('/api/employees', postBody).then(response => {
-                //If successfull, reset the error message and reload the list of employees
-                document.getElementById("errorMessage").innerText = "";
-                populateEmployeeList();
-            }).catch(err => {
-                //On failure, update the error message
-                document.getElementById("errorMessage").innerText = err.response.data;
+                const lastA = a.lastName.toUpperCase();
+                const lastB = b.lastName.toUpperCase();
+
+                if (firstA == firstB) return lastA < lastB ? -1 : 1;
+                else return firstA < firstB ? -1 : 1;
             });
+            updateList();
+        }
+
+        function updateList() {
+            //Obtain the accordian element
+            var accordian = document.getElementById("employeeAccordion");
+            accordian.innerHTML = "";
+
+            //Update the accordian element with all of the items in the list
+            for (const employee of employeeData) {
+                var innerString = "";
+                innerString += '<div class="accordion-item"><h2 class="accordion-header" id="id_' + employee._id + '"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_' + employee._id + '" aria-expanded="false" aria-controls="collapse_' + employee._id + '">' + employee.firstName + ' ' + employee.lastName + '</button></h2>';
+                innerString += '<div id="collapse_' + employee._id + '" class="accordion-collapse collapse" aria-labelledby="id_' + employee._id + '" data-bs-parent="#employeeAccordion"><div class="accordion-body">';
+
+                innerString += "<strong>ID: </strong> " + employee._id + "<br>";
+                innerString += "<strong>Hire Date: </strong> " + employee.hireDate + "<br>";
+                innerString += "<strong>Role: </strong> " + employee.role.toUpperCase() + "<br>";
+                innerString += "<strong>Quote: </strong> " + employee.quote + "<br>";
+                innerString += "<strong>Joke: </strong> " + employee.joke + "<br>";
+
+                innerString += '</div></div></div>';
+
+                accordian.innerHTML += innerString;
+            }
         }
     </script>
 </html> 

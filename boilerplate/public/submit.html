@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .center {
+            margin: auto;
+            width: 50%;
+        }
+        .text_center {
+            text-align: center;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+</head>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand">Full Stack Take Home</a>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link" href="index.html">Employee List</a>
+                    <a class="nav-link active" aria-current="page">Submit New Employee</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <body>
+        <div class="center text_center">
+
+            <h2><b>Create a new employee</b></h2>
+
+            <form>
+                <label for="firstName">First name:</label>
+                <input type="text" id="firstName" name="firstname"><br><br>
+                <label for="lastName">Last name:</label>
+                <input type="text" id="lastName" name="lastName"><br><br>
+                <label for="hireDate">Hire Date:</label>
+                <input type="text" id="hireDate" name="hireDate"><br><br>
+                <label for="role">Role:</label>
+                <input type="text" id="role" name="role"><br><br>
+                <input type="button" class="btn btn-primary" onclick="postEmployee()" value="Submit">
+            </form>
+            <div id="errorMessage" class="text-danger"></div>
+        </div>
+    </body>
+ 
+    <script>       
+    //Submit all the values in the text boxes to create a new employee and handle the response
+    function postEmployee() {
+        //Create and object with the data from the text boxes
+        let postBody = {};
+        postBody.firstName = document.getElementById("firstName").value;
+        postBody.lastName = document.getElementById("lastName").value;
+        postBody.hireDate = document.getElementById("hireDate").value;
+        postBody.role = document.getElementById("role").value;
+
+        //Send the post request to the REST endpoint
+        axios.post('/api/employees', postBody).then(response => {
+            //If successfull, reset the error message and reload the list of employees
+            document.getElementById("errorMessage").innerText = "";
+            parent.location="index.html";
+        }).catch(err => {
+            //On failure, update the error message
+            document.getElementById("errorMessage").innerText = err.response.data;
+        });
+    }
+    </script>
+</html>
